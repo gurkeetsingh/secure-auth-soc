@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from app import db
 from app.model import User
 from werkzeug.security import check_password_hash
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, create_refresh_token
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -67,10 +67,12 @@ def login():
         return jsonify({"error":"invalid credentials"}), 401
     
     # success response with jwt token
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=user.id) #creates the access token using the ID of user who is trying to log in
+    refresh_token = create_refresh_token(identity=user.id)
 
     return jsonify({
-        "access_token": access_token
+        "access_token": access_token,
+        "refresh_token": refresh_token
     }),200 #this return the token to the user, which user store in his storage
 
 
@@ -84,3 +86,15 @@ def profile():
         "message":"Access Granted",
         "user_id": user_id
     })
+
+#refresh endpoint for providing the refresh token for authentication
+@auth_bp.route("/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh():
+    identity=get_jwt_identity()
+
+    new_access_token = create_access_token(identity=identity)
+
+    return jsonify({
+        "access_token": new_access_token
+    }),200

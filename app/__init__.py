@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 import os
+from datetime import timedelta
 
 load_dotenv()
 
@@ -17,6 +18,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=15)
+    app.config['JWT_REFRESH_TOKEN_EXPIRES']= timedelta(days=7)
 
     print("DATABASE_URL =", os.getenv("DATABASE_URL"))
     db.init_app(app)
