@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from app import db
 from app.model import User
 from werkzeug.security import check_password_hash
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -65,5 +66,21 @@ def login():
     if not check_password_hash(user.password_hash, data.get("password")):
         return jsonify({"error":"invalid credentials"}), 401
     
-    # success response
-    return jsonify({"Message":"login successful"})
+    # success response with jwt token
+    access_token = create_access_token(identity=user.id)
+
+    return jsonify({
+        "access_token": access_token
+    }),200 #this return the token to the user, which user store in his storage
+
+
+# profile section with JWT(JSON Web Token) authentication
+@auth_bp.route("/profile", methods=["GET"])
+@jwt_required() #this makes sure that the signature is verified before giving access to resource
+def profile():
+    user_id = get_jwt_identity()
+
+    return jsonify({
+        "message":"Access Granted",
+        "user_id": user_id
+    })
