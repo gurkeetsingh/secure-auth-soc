@@ -67,8 +67,8 @@ def login():
         return jsonify({"error":"invalid credentials"}), 401
     
     # success response with jwt token
-    access_token = create_access_token(identity=user.id) #creates the access token using the ID of user who is trying to log in
-    refresh_token = create_refresh_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id)) #creates the access token using the ID of user who is trying to log in
+    refresh_token = create_refresh_token(identity=str(user.id))
 
     return jsonify({
         "access_token": access_token,
@@ -80,6 +80,8 @@ def login():
 @auth_bp.route("/profile", methods=["GET"])
 @jwt_required() #this makes sure that the signature is verified before giving access to resource
 def profile():
+    print("ALL HEADERS:", dict(request.headers))
+
     user_id = get_jwt_identity()
 
     return jsonify({
